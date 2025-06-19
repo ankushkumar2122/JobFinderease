@@ -7,11 +7,14 @@ const register = async (req, res) => {
   //user ko register karayaga
   try {
     const { fullname, email, phonenumber, password, role } = req.body;
+    // console.log(fullname, email, phonenumber, password, role);
     if (!fullname || !email || !phonenumber || !password || !role) {
       return res
         .status(404)
-        .json({ messane: "somthing is mising", success: false });
+        .json({ message: "somthing is mising", success: false });
     }
+    console.log("req.body is:", req.body);
+
     const user = await User.findOne({ email }); //check karega ki email pahala se exist to nahi kar raha
     if (user) {
       return res
@@ -26,6 +29,8 @@ const register = async (req, res) => {
       password: hashedPassword,
       role,
     });
+    console.log("req.body is:", req.body);
+
     return res
       .status(201)
       .json({ message: "account created succesfully", success: true });
@@ -49,7 +54,7 @@ const login = async (req, res) => {
         .status(400)
         .json({ message: "incorrect password and email", success: false });
     }
-    const ispasswordmatch = await bcrypt.compare(password, user.password);//chek password to hash password
+    const ispasswordmatch = await bcrypt.compare(password, user.password); //chek password to hash password
     if (!ispasswordmatch) {
       //chek password is match or not
       return res
@@ -78,21 +83,23 @@ const login = async (req, res) => {
       role: user.role,
       profile: user.profile,
     };
-    
+
     return res
-    .status(200)
-    .cookie("token", token, {
-      maxAge: 1 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      sameSite: "strict",
-    })
-    .json({ message: `Welcome back ${user.fullname}`, user: userData, success: true });
-  
+      .status(200)
+      .cookie("token", token, {
+        maxAge: 1 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: "strict",
+      })
+      .json({
+        message: `Welcome back ${user.fullname}`,
+        user: userData,
+        success: true,
+      });
   } catch (error) {
     console.log(error);
   }
 };
-
 
 //logout
 const logout = (req, res) => {
@@ -109,16 +116,18 @@ const logout = (req, res) => {
 const updateprofile = async (req, res) => {
   try {
     const { fullname, email, phonenumber, bio, skills } = req.body;
-    const file = req.file;  // Handle file (if uploaded)
+    const file = req.file; // Handle file (if uploaded)
 
     // Convert skills to array if provided
     let skillsArray = skills ? skills.split(",") : [];
 
     const userId = req.id;
- // Authentication middleware should set user ID
+    // Authentication middleware should set user ID
     let user = await User.findById(userId);
     if (!user) {
-      return res.status(400).json({ message: "User not found", success: false });
+      return res
+        .status(400)
+        .json({ message: "User not found", success: false });
     }
 
     // Initialize profile if not present
@@ -163,6 +172,5 @@ const updateprofile = async (req, res) => {
     return res.status(500).json({ message: "Server error", success: false });
   }
 };
-
 
 module.exports = { register, login, logout, updateprofile };

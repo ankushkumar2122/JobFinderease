@@ -3,21 +3,24 @@ import Navbar from "../shared/Navbar";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/Constant";
+import { toast } from "sonner";
 
 const Signup = () => {
   const [input, setInput] = useState({
     fullname: "",
     email: "",
-    phoneNuber: "",
+    phoneNumber: "",
     password: "",
     role: "",
     file: "",
   });
-  const changeeventhandler = (e) => {
+  const navigate = useNavigate();
+
+  const changeEventhandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
@@ -29,7 +32,7 @@ const Signup = () => {
     const formData = new FormData();
     formData.append("fullname", input.fullname);
     formData.append("email", input.email);
-    formData.append("phoneNuber", input.phoneNuber);
+    formData.append("phonenumber", input.phoneNumber);
     formData.append("password", input.password);
     formData.append("role", input.role);
     if (input.file) {
@@ -38,14 +41,19 @@ const Signup = () => {
     try {
       const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
         headers: {
-          "Content-Type": "multipart/formData",
+          "Content-Type": "multipart/form-data",
         },
         withCredentials: true,
       });
+      if (res.data.success) {
+        navigate("/login");
+        toast.success(res.data.message);
+      }
     } catch (error) {
       console.log(error);
+      toast.error(error.response.data.message);
     }
-   
+
     // setInput({ ...input, file: e.target.files?.[0] });
   };
   return (
@@ -64,7 +72,7 @@ const Signup = () => {
               placeholder="Ankush"
               value={input.fullname}
               name="fullname"
-              onChange={changeeventhandler}
+              onChange={changeEventhandler}
             />
           </div>
           <div className="my-2">
@@ -74,7 +82,7 @@ const Signup = () => {
               placeholder="Ankushkumar@gmail.com"
               value={input.email}
               name="email"
-              onChange={changeeventhandler}
+              onChange={changeEventhandler}
             />
           </div>
           <div className="my-2">
@@ -82,18 +90,19 @@ const Signup = () => {
             <Input
               type="number"
               placeholder="789451231"
-              value={input.phoneNuber}
-              name="phoneNuber"
-              onChange={changeeventhandler}
+              value={input.phoneNumber}
+              name="phoneNumber"
+              onChange={changeEventhandler}
             />
           </div>
           <div className="my-2">
             <Label>Password</Label>
             <Input
               type="password"
+              placeholder="****"
               value={input.password}
               name="password"
-              onChange={changeeventhandler}
+              onChange={changeEventhandler}
             />
           </div>
           <div className="flex items-center justify-center">
@@ -104,7 +113,7 @@ const Signup = () => {
                   name="role"
                   value="student"
                   checked={input.role == "student"}
-                  onChange={changeeventhandler}
+                  onChange={changeEventhandler}
                   className="cursor-pointer"
                 />
                 <Label htmlFor="r1">Student</Label>
@@ -115,7 +124,7 @@ const Signup = () => {
                   name="role"
                   value="recruiter"
                   checked={input.role == "recruiter"}
-                  onChange={changeeventhandler}
+                  onChange={changeEventhandler}
                   className="cursor-pointer"
                 />
                 <Label htmlFor="r2">Recruiter</Label>
